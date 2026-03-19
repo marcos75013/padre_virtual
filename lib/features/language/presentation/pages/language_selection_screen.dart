@@ -17,7 +17,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   final List<Map<String, dynamic>> languages = [
     {"name": "Français", "locale": const Locale('fr'), "flag": "🇫🇷"},
     {"name": "English", "locale": const Locale('en'), "flag": "🇬🇧"},
-    {"name": "Português (Brasil)", "locale": const Locale('pt'), "flag": "🇧🇷"},
+    {"name": "Português", "locale": const Locale('pt'), "flag": "🇧🇷"},
   ];
 
   Future<void> _saveLanguage(Locale locale) async {
@@ -28,49 +28,153 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('choose_language'.tr())),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+      backgroundColor: const Color(0xFF0B1C3D),
+
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+
+          child: Column(
+            children: [
+
+              const SizedBox(height: 40),
+
+              /// ✨ ICON / AVATAR
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.amber.withOpacity(0.3),
+                      blurRadius: 40,
+                      spreadRadius: 5,
+                    )
+                  ],
+                ),
+
+              ),
+
+              const SizedBox(height: 20),
+
+              /// TITLE
+              Text(
+                "Choose your language".tr(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 10),
+
+              /// SUBTITLE
+              Text(
+                "Select your preferred language to continue",
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 15,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 30),
+
+              /// 🌍 LISTE DES LANGUES
+              Column(
+                children: languages.map((lang) {
+                  return _languageCard(lang);
+                }).toList(),
+              ),
+
+              const Spacer(),
+
+              /// 🚀 BUTTON
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () async {
+
+                    await _saveLanguage(selectedLocale);
+
+                    context.setLocale(selectedLocale);
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomeScreen()),
+                    );
+                  },
+                  child: Text(
+                    "continue".tr(),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🌍 LANGUAGE CARD
+  Widget _languageCard(Map<String, dynamic> lang) {
+
+    final isSelected = selectedLocale == lang["locale"];
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedLocale = lang["locale"];
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Colors.amber
+              : Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(14),
+        ),
+
+        child: Row(
           children: [
 
-            DropdownButton<Locale>(
-              value: selectedLocale,
-              isExpanded: true,
-              items: languages.map((lang) {
-                return DropdownMenuItem<Locale>(
-                  value: lang["locale"],
-                  child: Row(
-                    children: [
-                      Text(lang["flag"]),
-                      const SizedBox(width: 10),
-                      Text(lang["name"]),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (locale) {
-                setState(() {
-                  selectedLocale = locale!;
-                });
-              },
+            Text(
+              lang["flag"],
+              style: const TextStyle(fontSize: 24),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(width: 12),
 
-            ElevatedButton(
-              onPressed: () async {
-                await _saveLanguage(selectedLocale);
+            Expanded(
+              child: Text(
+                lang["name"],
+                style: TextStyle(
+                  color: isSelected ? Colors.black : Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
 
-                context.setLocale(selectedLocale);
-
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const HomeScreen()),
-                );
-              },
-              child: Text('continue'.tr()),
-            )
+            if (isSelected)
+              const Icon(Icons.check, color: Colors.black)
           ],
         ),
       ),
