@@ -30,6 +30,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
   late stt.SpeechToText speech;
 
   bool listening = false;
+  bool isSpeaking = false;
 
   late String selectedLang;
 
@@ -49,95 +50,156 @@ class _VoiceScreenState extends State<VoiceScreen> {
     super.initState();
 
     speech = stt.SpeechToText();
-
     selectedLang = _mapLanguage(widget.language);
 
     /// quand le prêtre parle
     tts.setStartHandler(() {
+      isSpeaking = true;
       startMouthAnimation();
     });
 
     /// quand il finit
     tts.setCompletionHandler(() {
-
+      isSpeaking = false;
       stopMouthAnimation();
-
       startListening();
     });
   }
 
+  @override
+  void dispose() {
+    mouthTimer?.cancel();
+    speech.stop();
+    tts.stop();
+    super.dispose();
+  }
+
+  /// 📞 Raccrocher
+  Future<void> hangUp() async {
+
+    await speech.stop();
+    await tts.stop();
+
+    stopMouthAnimation();
+
+    if (!mounted) return;
+
+    setState(() {
+      listening = false;
+      isSpeaking = false;
+    });
+
+    /// 🔔 POPUP
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.black87,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.call_end, color: Colors.red, size: 50),
+            SizedBox(height: 20),
+            Text(
+              "Appel terminé",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    /// ⏱️ ferme popup + écran après 1.5s
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        Navigator.pop(context); // ferme popup
+        Navigator.pop(context); // quitte écran
+      }
+    });
+  }
+
   String _mapLanguage(String lang) {
-
     switch (lang) {
-
       case "Français":
         return "fr-FR";
-
       case "English":
         return "en-US";
-
       case "Português":
         return "pt-PT";
-
       case "Español":
         return "es-ES";
-
       default:
         return "fr-FR";
     }
   }
 
   void startMouthAnimation() {
+    mouthTimer?.cancel();
 
     mouthTimer = Timer.periodic(
       const Duration(milliseconds: 180),
           (_) {
-
+        if (!mounted) return;
         setState(() {
           frame = (frame + 1) % priestFrames.length;
         });
-
       },
     );
   }
 
   void stopMouthAnimation() {
-
     mouthTimer?.cancel();
+
+    if (!mounted) return;
 
     setState(() {
       frame = 0;
     });
   }
 
-  Future askPriest(String text) async {
+  Future<void> askPriest(String text) async {
 
-    final res = await http.post(
-      Uri.parse("http://192.168.1.36:3000/chat"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "messages": [
-          {"role": "user", "content": text}
-        ],
-        "lang": selectedLang,
-        "gender": widget.gender, // 🔥 NEW
-        "age": widget.age,       // 🔥 NEW
-      }),
-    );
+    try {
 
-    final data = jsonDecode(res.body);
+      final res = await http.post(
+        Uri.parse("http://192.168.1.36:3000/chat"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "messages": [
+            {"role": "user", "content": text}
+          ],
+          "lang": selectedLang,
+          "gender": widget.gender,
+          "age": widget.age,
+          "name": widget.name, // 🔥 AJOUT IMPORTANT
+        }),
+      );
 
-    await tts.setLanguage(selectedLang);
-    await tts.setSpeechRate(0.45);
+      final data = jsonDecode(res.body);
 
-    await tts.speak(data["answer"]);
+      await tts.setLanguage(selectedLang);
+      await tts.setSpeechRate(0.45);
+
+      await tts.speak(data["answer"]);
+
+    } catch (e) {
+      debugPrint("❌ ERREUR API: $e");
+    }
   }
 
-  startListening() async {
+  Future<void> startListening() async {
 
     bool available = await speech.initialize();
 
     if (!available) return;
+
+    if (!mounted) return;
 
     setState(() {
       listening = true;
@@ -155,16 +217,16 @@ class _VoiceScreenState extends State<VoiceScreen> {
           stopListening();
 
           askPriest(text);
-
         }
-
       },
     );
   }
 
-  stopListening() async {
+  Future<void> stopListening() async {
 
     await speech.stop();
+
+    if (!mounted) return;
 
     setState(() {
       listening = false;
@@ -175,7 +237,6 @@ class _VoiceScreenState extends State<VoiceScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-
       backgroundColor: const Color(0xFF0B1C3D),
 
       appBar: AppBar(
@@ -185,21 +246,14 @@ class _VoiceScreenState extends State<VoiceScreen> {
       ),
 
       body: Center(
-
         child: Column(
-
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-
           children: [
 
             /// HALO + PRÊTRE
-
             Stack(
               alignment: Alignment.center,
               children: [
-
-                /// HALO LUMINEUX
 
                 Container(
                   width: 260,
@@ -215,8 +269,6 @@ class _VoiceScreenState extends State<VoiceScreen> {
                   ),
                 ),
 
-                /// PRÊTRE ANIMÉ
-
                 Image.asset(
                   priestFrames[frame],
                   height: 300,
@@ -227,62 +279,69 @@ class _VoiceScreenState extends State<VoiceScreen> {
             const SizedBox(height: 40),
 
             /// TEXTE
-
             Text(
               listening
                   ? "voice.listening".tr()
                   : "voice.tap".tr(),
-
               style: const TextStyle(
                 fontSize: 20,
                 color: Colors.white,
-                fontWeight: FontWeight.w500,
               ),
             ),
 
             const SizedBox(height: 40),
 
-            /// MICRO
+            /// 🎤 + 📞
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
 
-            GestureDetector(
-
-              onTap: () {
-
-                if (listening) {
-                  stopListening();
-                } else {
-                  startListening();
-                }
-
-              },
-
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.all(35),
-
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: listening
-                      ? Colors.red
-                      : Colors.deepPurple,
-
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.deepPurple.withOpacity(0.6),
-                      blurRadius: listening ? 40 : 20,
-                      spreadRadius: listening ? 10 : 3,
-                    )
-                  ],
+                /// MICRO
+                GestureDetector(
+                  onTap: () {
+                    if (listening) {
+                      stopListening();
+                    } else {
+                      startListening();
+                    }
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    padding: const EdgeInsets.all(30),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: listening
+                          ? Colors.red
+                          : Colors.deepPurple,
+                    ),
+                    child: const Icon(
+                      Icons.mic,
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
 
-                child: const Icon(
-                  Icons.mic,
-                  size: 60,
-                  color: Colors.white,
+                const SizedBox(width: 40),
+
+                /// 📞 RACCROCHER
+                GestureDetector(
+                  onTap: hangUp,
+                  child: Container(
+                    padding: const EdgeInsets.all(30),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.redAccent,
+                    ),
+                    child: const Icon(
+                      Icons.call_end,
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-
           ],
         ),
       ),
