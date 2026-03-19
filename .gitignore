@@ -1,0 +1,63 @@
+# =========================
+# SYSTEM
+# =========================
+.DS_Store
+*.log
+
+# =========================
+# IDE
+# =========================
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# =========================
+# FLUTTER / DART
+# =========================
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+
+# =========================
+# ANDROID
+# =========================
+android/.gradle/
+android/app/build/
+android/app/debug
+android/app/profile
+android/app/release
+
+# =========================
+# IOS
+# =========================
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/App.framework
+
+# =========================
+# MACOS
+# =========================
+macos/Flutter/ephemeral/
+
+# =========================
+# SYMBOLS / OBFUSCATION
+# =========================
+app.*.symbols
+app.*.map.json
+
+# =========================
+# SECRETS (TRÈS IMPORTANT)
+# =========================
+.env
+# NODE BACKEND
+node_modules/
+npm-debug.log*
+yarn-error.log*
