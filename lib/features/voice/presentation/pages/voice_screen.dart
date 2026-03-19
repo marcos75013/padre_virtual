@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_tts/flutter_tts.dart';
@@ -9,12 +10,14 @@ class VoiceScreen extends StatefulWidget {
   final String language;
   final String gender;
   final int age;
+  final String name;
 
   const VoiceScreen({
     super.key,
     required this.language,
     required this.gender,
     required this.age,
+    required this.name,
   });
 
   @override
@@ -35,10 +38,10 @@ class _VoiceScreenState extends State<VoiceScreen> {
   Timer? mouthTimer;
 
   final List<String> priestFrames = [
-    "assets/boucheferme.png",
-    "assets/boucheopen.png",
-    "assets/bouchebienouverte.png",
-    "assets/boucheopen.png",
+    "assets/images/boucheferme.png",
+    "assets/images/boucheopen.png",
+    "assets/images/bouchebienouverte.png",
+    "assets/images/boucheopen.png",
   ];
 
   @override
@@ -176,7 +179,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
       backgroundColor: const Color(0xFF0B1C3D),
 
       appBar: AppBar(
-        title: const Text("Conversation vocale"),
+        title: Text("voice.title".tr()),
         backgroundColor: Colors.amber,
         elevation: 0,
       ),
@@ -227,8 +230,8 @@ class _VoiceScreenState extends State<VoiceScreen> {
 
             Text(
               listening
-                  ? "Je vous écoute..."
-                  : "Appuyez pour parler",
+                  ? "voice.listening".tr()
+                  : "voice.tap".tr(),
 
               style: const TextStyle(
                 fontSize: 20,

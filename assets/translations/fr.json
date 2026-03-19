@@ -1,0 +1,28 @@
+{
+  "home": {
+    "name": "Votre prénom",
+    "name_placeholder": "Entrez votre prénom",
+    "title": "Prêtre Virtuel",
+    "description": "Je suis un prêtre virtuel, je suis là pour vous écouter et vous aider.",
+    "gender": "Votre sexe",
+    "age": "Votre âge",
+    "start": "Démarrer un échange avec le prêtre",
+    "man": "Homme",
+    "woman": "Femme"
+  },
+  "voice": {
+    "title": "Conversation vocale",
+    "listening": "Je vous écoute...",
+    "tap": "Appuyez pour parler"
+  },
+  "chat": {
+    "title": "Conversation texte",
+    "typing": "Le prêtre écrit...",
+    "placeholder": "Pose ta question..."
+  },
+  "mode": {
+    "title": "Choisir un mode",
+    "text": "Conversation texte",
+    "voice": "Conversation vocale"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "home": {
+    "name": "Your name",
+    "name_placeholder": "Enter your name",
+    "title": "Padre Virtual",
+    "description": "Sou um padre virtual, estou aqui para te ouvir e te ajudar.",
+    "gender": "Seu sexo",
+    "age": "Sua idade",
+    "start": "Iniciar conversa",
+    "man": "Homem",
+    "woman": "Mulher"
+  },
+  "voice": {
+    "title": "Conversa por voz",
+    "listening": "Estou te ouvindo...",
+    "tap": "Toque para falar"
+  },
+  "chat": {
+    "title": "Conversa por texto",
+    "typing": "O padre está escrevendo...",
+    "placeholder": "Faça sua pergunta..."
+  },
+  "mode": {
+    "title": "Escolha um modo",
+    "text": "Conversa por texto",
+    "voice": "Conversa por voz"
+  }
+}

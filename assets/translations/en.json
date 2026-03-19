@@ -1,0 +1,28 @@
+{
+  "home": {
+    "name": "Your name",
+    "name_placeholder": "Enter your name",
+    "title": "Virtual Priest",
+    "description": "I am a virtual priest, here to listen and guide you.",
+    "gender": "Your gender",
+    "age": "Your age",
+    "start": "Start a conversation",
+    "man": "Man",
+    "woman": "Woman"
+  },
+  "voice": {
+    "title": "Voice conversation",
+    "listening": "I am listening...",
+    "tap": "Tap to speak"
+  },
+  "chat": {
+    "title": "Text conversation",
+    "typing": "The priest is typing...",
+    "placeholder": "Ask your question..."
+  },
+  "mode": {
+    "title": "Choose a mode",
+    "text": "Text conversation",
+    "voice": "Voice conversation"
+  }
+}
