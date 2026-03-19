@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../home/presentation/home_screen.dart';
+import '../../../language/presentation/pages/language_selection_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -43,18 +45,28 @@ class _SplashScreenState extends State<SplashScreen>
 
     logoController.forward();
 
-    Timer(const Duration(seconds: 3), () {
+    _navigate();
+  }
+
+  Future<void> _navigate() async {
+    await Future.delayed(const Duration(seconds: 3));
+
+    final prefs = await SharedPreferences.getInstance();
+    final savedLang = prefs.getString("lang");
+
+    if (savedLang == null) {
+      /// 👉 PREMIÈRE FOIS → choix langue
       Navigator.pushReplacement(
         context,
-        PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 600),
-          pageBuilder: (_, __, ___) => const HomeScreen(),
-          transitionsBuilder: (_, animation, __, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
+        MaterialPageRoute(builder: (_) => const LanguageSelectionScreen()),
       );
-    });
+    } else {
+      /// 👉 langue déjà choisie → Home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    }
   }
 
   @override
@@ -70,8 +82,6 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: const Color(0xFF0B1C3D),
       body: Stack(
         children: [
-
-          /// PARTICULES
           AnimatedBuilder(
             animation: particlesController,
             builder: (context, _) {
@@ -81,8 +91,6 @@ class _SplashScreenState extends State<SplashScreen>
               );
             },
           ),
-
-          /// HALO LUMINEUX
           Center(
             child: Container(
               width: 260,
@@ -99,8 +107,6 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
           ),
-
-          /// LOGO + TEXTE
           Center(
             child: AnimatedBuilder(
               animation: logoController,
@@ -116,33 +122,16 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
-                  Image.asset(
-                    "assets/padre.png",
-                    width: 150,
-                  ),
-
+                  Image.asset("assets/images/padre.png", width: 150),
                   const SizedBox(height: 20),
-
-                  const Text(
-                    "Padre",
-                    style: TextStyle(
-                      fontSize: 30,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.3,
-                    ),
-                  ),
-
+                  const Text("Padre",
+                      style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
-
-                  const Text(
-                    "Toujours à votre écoute",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
-                  ),
+                  const Text("Toujours à votre écoute",
+                      style: TextStyle(color: Colors.white70)),
                 ],
               ),
             ),

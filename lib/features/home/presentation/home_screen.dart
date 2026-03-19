@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:padre_virtual/features/home/presentation/pages/conversation_mode_screen.dart';
+import 'package:padre_virtual/core/services/user_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,15 +13,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
 
   String? gender;
-  String? language;
   int age = 25;
 
-  final Map<String, String> languageFlags = {
-    "Français": "🇫🇷",
-    "English": "🇬🇧",
-    "Português": "🇧🇷",
-    "Español": "🇪🇸",
-  };
+  final TextEditingController nameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -51,15 +47,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: const CircleAvatar(
                     radius: 70,
-                    backgroundImage: AssetImage("assets/boucheopen.png"),
+                    backgroundImage: AssetImage("assets/images/boucheopen.png"),
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
-                const Text(
-                  "Prêtre Virtuel",
-                  style: TextStyle(
+                /// TITLE
+                Text(
+                  "home.title".tr(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -68,9 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 20),
 
-                const Text(
-                  "Je suis un prêtre virtuel, je suis là pour vous écouter et vous aider.",
-                  style: TextStyle(
+                /// DESCRIPTION
+                Text(
+                  "home.description".tr(),
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 16,
                   ),
@@ -79,12 +77,40 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 30),
 
-                /// SEXE
-                const Align(
+                /// PRENOM
+                Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "Votre sexe",
-                    style: TextStyle(color: Colors.white70),
+                    "home.name".tr(),
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                TextField(
+                  controller: nameController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: "home.name_placeholder".tr(),
+                    hintStyle: const TextStyle(color: Colors.white54),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.08),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                /// SEXE
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "home.gender".tr(),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                 ),
 
@@ -92,20 +118,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 Row(
                   children: [
-                    _genderButton("Homme", Icons.male),
+                    _genderButton("home.man".tr(), Icons.male, "male"),
                     const SizedBox(width: 10),
-                    _genderButton("Femme", Icons.female),
+                    _genderButton("home.woman".tr(), Icons.female, "female"),
                   ],
                 ),
 
                 const SizedBox(height: 16),
 
                 /// AGE
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "Votre âge",
-                    style: TextStyle(color: Colors.white70),
+                    "home.age".tr(),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                 ),
 
@@ -115,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   max: 90,
                   divisions: 80,
                   activeColor: Colors.amber,
-                  label: "$age ans",
+                  label: "$age",
                   onChanged: (value) {
                     setState(() {
                       age = value.toInt();
@@ -124,52 +150,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 Text(
-                  "$age ans",
+                  "$age",
                   style: const TextStyle(color: Colors.white),
-                ),
-
-                const SizedBox(height: 16),
-
-                /// LANGUE
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Langue de conversation",
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                DropdownButtonFormField<String>(
-                  dropdownColor: const Color(0xFF0B1C3D),
-                  value: language,
-                  decoration: InputDecoration(
-                    hintText: "Sélectionnez une langue",
-                    hintStyle: const TextStyle(color: Colors.amber),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.08),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  items: languageFlags.entries.map((entry) {
-                    return DropdownMenuItem(
-                      value: entry.key,
-                      child: Row(
-                        children: [
-                          Text(entry.value, style: const TextStyle(fontSize: 20)),
-                          const SizedBox(width: 10),
-                          Text(entry.key, style: const TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      language = value;
-                    });
-                  },
                 ),
 
                 const SizedBox(height: 20),
@@ -185,23 +167,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    onPressed: gender != null && language != null
-                        ? () {
-                      Navigator.push(
+                    onPressed: gender != null && nameController.text.isNotEmpty
+                        ? () async {
+
+                      /// 💾 SAVE USER
+                      await UserPreferences.saveUser(
+                        name: nameController.text.trim(),
+                        gender: gender!,
+                        age: age,
+                      );
+
+                      /// 🚀 NAVIGATION
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ConversationModeScreen(
-                            language: language!,
+                            language: context.locale.languageCode,
                             gender: gender!,
                             age: age,
+                            name: nameController.text.trim(),
                           ),
                         ),
                       );
+
                     }
                         : null,
-                    child: const Text(
-                      "Démarrer un échange avec le prêtre",
-                      style: TextStyle(
+                    child: Text(
+                      "home.start".tr(),
+                      style: const TextStyle(
                         fontSize: 16,
                         color: Colors.black,
                       ),
@@ -218,15 +211,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _genderButton(String label, IconData icon) {
+  Widget _genderButton(String label, IconData icon, String value) {
 
-    final selected = gender == label;
+    final selected = gender == value;
 
     return Expanded(
       child: GestureDetector(
         onTap: () {
           setState(() {
-            gender = label;
+            gender = value;
           });
         },
         child: Container(

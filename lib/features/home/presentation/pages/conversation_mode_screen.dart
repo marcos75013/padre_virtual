@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../chat/presentation/pages/chat_screen.dart';
 import '../../../voice/presentation/pages/voice_screen.dart';
@@ -6,12 +7,14 @@ class ConversationModeScreen extends StatelessWidget {
   final String language;
   final String gender;
   final int age;
+  final String name;
 
   const ConversationModeScreen({
     super.key,
     required this.language,
     required this.gender,
     required this.age,
+    required this.name,
   });
 
   @override
@@ -20,7 +23,8 @@ class ConversationModeScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0B1C3D),
 
       appBar: AppBar(
-        title: const Text("Choisir un mode"),
+        title: Text("mode.title".tr())
+        ,
         backgroundColor: Colors.amber,
         elevation: 0,
       ),
@@ -37,7 +41,8 @@ class ConversationModeScreen extends StatelessWidget {
             _modeCard(
               context,
               icon: Icons.chat,
-              title: "Conversation texte",
+                title: "mode.text".tr()
+                ,
               onTap: () {
                 Navigator.push(
                   context,
@@ -46,6 +51,7 @@ class ConversationModeScreen extends StatelessWidget {
                       language: language,
                       gender: gender,
                       age: age,
+                      name: name,
                     )
                   ),
                 );
@@ -58,7 +64,8 @@ class ConversationModeScreen extends StatelessWidget {
             _modeCard(
               context,
               icon: Icons.mic,
-              title: "Conversation vocale",
+                title: "mode.voice".tr()
+                ,
               onTap: () {
                 Navigator.push(
                   context,
@@ -67,6 +74,7 @@ class ConversationModeScreen extends StatelessWidget {
                       language: language,
                       gender: gender,
                       age: age,
+                      name: name,
                     )
                   ),
                 );

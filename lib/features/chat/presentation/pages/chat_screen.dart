@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -7,12 +8,14 @@ class ChatScreen extends StatefulWidget {
   final String language;
   final String gender;
   final int age;
+  final String name;
 
   const ChatScreen({
     super.key,
     required this.language,
     required this.gender,
     required this.age,
+    required this.name,
   });
 
   @override
@@ -178,12 +181,12 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            TypingDots(),
-            SizedBox(width: 10),
+          children: [
+            const TypingDots(),
+            const SizedBox(width: 10),
             Text(
-              "Le prêtre écrit...",
-              style: TextStyle(
+              "chat.typing".tr(),
+              style: const TextStyle(
                 color: Colors.black,
                 fontSize: 14,
               ),
@@ -206,7 +209,8 @@ class _ChatScreenState extends State<ChatScreen> {
       backgroundColor: const Color(0xFF0B1C3D),
 
       appBar: AppBar(
-        title: const Text("Conversation texte"),
+        title: Text("chat.title".tr())
+        ,
         backgroundColor: Colors.amber,
         elevation: 0,
       ),
@@ -235,7 +239,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 Image.asset(
-                  "assets/boucheopen.png",
+                  "assets/images/boucheopen.png",
                   height: 180,
                 ),
               ],
@@ -273,8 +277,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         controller: controller,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          hintText: "Pose ta question...",
-                          hintStyle: const TextStyle(color: Colors.white54),
+                            hintText: "chat.placeholder".tr()
+                            ,                          hintStyle: const TextStyle(color: Colors.white54),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.08),
                           border: OutlineInputBorder(
