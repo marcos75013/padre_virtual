@@ -51,9 +51,9 @@ class _AppDrawerState extends State<AppDrawer> {
           children: [
 
             /// 🔥 TITLE
-            const Text(
-              "⚙️ Paramètres",
-              style: TextStyle(
+            Text(
+              "⚙️ ${"settings.title".tr()}",
+              style: const TextStyle(
                 color: Colors.amber,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -63,9 +63,9 @@ class _AppDrawerState extends State<AppDrawer> {
             const SizedBox(height: 20),
 
             /// 🌍 LANGUE
-            const Text(
-              "Langue",
-              style: TextStyle(color: Colors.white70),
+            Text(
+              "settings.language".tr(),
+              style: const TextStyle(color: Colors.white70),
             ),
 
             const SizedBox(height: 8),
@@ -81,22 +81,20 @@ class _AppDrawerState extends State<AppDrawer> {
                 isExpanded: true,
                 underline: const SizedBox(),
                 dropdownColor: const Color(0xFF1C2A4A),
-
-                /// 🔥 STYLE TEXTE SELECTION
                 style: const TextStyle(color: Colors.amber),
 
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: "fr",
-                    child: Text("🇫🇷 Français"),
+                    child: Text("🇫🇷 ${"settings.french".tr()}"),
                   ),
                   DropdownMenuItem(
                     value: "en",
-                    child: Text("🇬🇧 English"),
+                    child: Text("🇬🇧 ${"settings.english".tr()}"),
                   ),
                   DropdownMenuItem(
                     value: "pt",
-                    child: Text("🇧🇷 Português"),
+                    child: Text("🇧🇷 ${"settings.portuguese".tr()}"),
                   ),
                 ],
 
@@ -112,18 +110,26 @@ class _AppDrawerState extends State<AppDrawer> {
             const Divider(color: Colors.white30),
 
             /// 👤 NOM
-            const Text("Nom", style: TextStyle(color: Colors.white70)),
+            Text(
+              "home.name".tr(),
+              style: const TextStyle(color: Colors.white70),
+            ),
 
             TextField(
               controller: nameController,
               style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration(),
+              decoration: _inputDecoration(
+                hint: "home.name_placeholder".tr(),
+              ),
             ),
 
             const SizedBox(height: 10),
 
             /// 🎂 AGE
-            const Text("Âge", style: TextStyle(color: Colors.white70)),
+            Text(
+              "home.age".tr(),
+              style: const TextStyle(color: Colors.white70),
+            ),
 
             TextField(
               controller: ageController,
@@ -135,7 +141,10 @@ class _AppDrawerState extends State<AppDrawer> {
             const SizedBox(height: 10),
 
             /// 🚻 GENRE
-            const Text("Genre", style: TextStyle(color: Colors.white70)),
+            Text(
+              "home.gender".tr(),
+              style: const TextStyle(color: Colors.white70),
+            ),
 
             const SizedBox(height: 8),
 
@@ -152,14 +161,14 @@ class _AppDrawerState extends State<AppDrawer> {
                 dropdownColor: const Color(0xFF1C2A4A),
                 style: const TextStyle(color: Colors.white),
 
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: "male",
-                    child: Text("👨 Homme"),
+                    child: Text("home.man".tr()),
                   ),
                   DropdownMenuItem(
                     value: "female",
-                    child: Text("👩 Femme"),
+                    child: Text("home.woman".tr()),
                   ),
                 ],
 
@@ -188,7 +197,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 backgroundColor: Colors.amber,
                 foregroundColor: Colors.black,
               ),
-              child: const Text("Sauvegarder"),
+              child: Text("settings.save".tr()),
             ),
           ],
         ),
@@ -196,8 +205,9 @@ class _AppDrawerState extends State<AppDrawer> {
     );
   }
 
-  InputDecoration _inputDecoration() {
+  InputDecoration _inputDecoration({String? hint}) {
     return InputDecoration(
+      hintText: hint,
       filled: true,
       fillColor: Colors.white.withOpacity(0.08),
       hintStyle: const TextStyle(color: Colors.white38),

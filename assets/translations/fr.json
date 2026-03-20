@@ -28,5 +28,13 @@
     "title": "Choisir un mode",
     "text": "Conversation texte",
     "voice": "Conversation vocale"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "french": "Français",
+    "english": "Anglais",
+    "portuguese": "Portugais",
+    "save": "Sauvegarder"
   }
 }
