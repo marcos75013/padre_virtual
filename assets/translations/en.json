@@ -12,8 +12,12 @@
   },
   "voice": {
     "title": "Voice conversation",
-    "listening": "I am listening...",
-    "tap": "Tap to speak"
+    "listening": "🎤 I am listening...",
+    "speaking": "🗣️ The priest is speaking...",
+    "processing": "⏳ Processing...",
+    "tap": "Tap to speak",
+    "hangup_title": "Call ended",
+    "hangup_subtitle": "May God watch over you"
   },
   "chat": {
     "title": "Text conversation",

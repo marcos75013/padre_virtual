@@ -45,18 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   String _mapLanguage(String lang) {
-    switch (lang) {
-      case "Français":
-        return "fr";
-      case "English":
-        return "en";
-      case "Português":
-        return "pt";
-      case "Español":
-        return "es";
-      default:
-        return "fr";
-    }
+    return lang; // 🔥 IMPORTANT
   }
 
   /// 🔥 SCROLL AUTO
@@ -96,8 +85,9 @@ class _ChatScreenState extends State<ChatScreen> {
       body: jsonEncode({
         "messages": messages,
         "lang": selectedLang,
-        "gender": widget.gender, // 🔥 NEW
-        "age": widget.age,       // 🔥 NEW
+        "gender": widget.gender,
+        "age": widget.age,
+        "name": widget.name,
       }),
     );
 
