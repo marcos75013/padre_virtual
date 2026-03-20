@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+// 🔥 IMPORTS
+import '../../../../common/widgets/app_drawer.dart';
+import '../../../../common/widgets/custom_app_bar.dart';
+
 class ChatScreen extends StatefulWidget {
   final String language;
   final String gender;
@@ -24,8 +28,11 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
 
+  /// 🔥 SCAFFOLD KEY
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   final TextEditingController controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController(); // 🔥 NEW
+  final ScrollController _scrollController = ScrollController();
 
   late stt.SpeechToText speech;
 
@@ -36,16 +43,22 @@ class _ChatScreenState extends State<ChatScreen> {
 
   late String selectedLang;
 
+  /// 🔥 USER STATE (modifiable depuis drawer)
+  late String userName;
+  late int userAge;
+  late String userGender;
+
   @override
   void initState() {
     super.initState();
 
     speech = stt.SpeechToText();
-    selectedLang = _mapLanguage(widget.language);
-  }
 
-  String _mapLanguage(String lang) {
-    return lang; // 🔥 IMPORTANT
+    selectedLang = widget.language;
+
+    userName = widget.name;
+    userAge = widget.age;
+    userGender = widget.gender;
   }
 
   /// 🔥 SCROLL AUTO
@@ -76,8 +89,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     controller.clear();
-
-    _scrollToBottom(); // 🔥 après message user
+    _scrollToBottom();
 
     final res = await http.post(
       Uri.parse("http://192.168.1.36:3000/chat"),
@@ -85,9 +97,9 @@ class _ChatScreenState extends State<ChatScreen> {
       body: jsonEncode({
         "messages": messages,
         "lang": selectedLang,
-        "gender": widget.gender,
-        "age": widget.age,
-        "name": widget.name,
+        "gender": userGender,
+        "age": userAge,
+        "name": userName,
       }),
     );
 
@@ -102,7 +114,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
     });
 
-    _scrollToBottom(); // 🔥 après réponse
+    _scrollToBottom();
   }
 
   Future<void> startListening() async {
@@ -190,19 +202,42 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
 
-    /// 🔥 scroll automatique après render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFF0B1C3D),
 
-      appBar: AppBar(
-        title: Text("chat.title".tr())
-        ,
-        backgroundColor: Colors.amber,
-        elevation: 0,
+      /// 🔥 APPBAR
+      appBar: CustomAppBar(
+        title: "chat.title".tr(),
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
+      ),
+
+      /// 🔥 DRAWER
+      drawer: AppDrawer(
+        currentLanguage: selectedLang,
+        name: userName,
+        age: userAge,
+        gender: userGender,
+
+        onLanguageChanged: (lang) {
+          setState(() {
+            selectedLang = lang;
+          });
+        },
+
+        onUserChanged: (name, age, gender) {
+          setState(() {
+            userName = name;
+            userAge = age;
+            userGender = gender;
+          });
+        },
       ),
 
       body: SafeArea(
@@ -211,7 +246,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
             const SizedBox(height: 10),
 
-            /// HALO + IMAGE
+            /// IMAGE PRÊTRE
             Stack(
               alignment: Alignment.center,
               children: [
@@ -267,8 +302,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         controller: controller,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                            hintText: "chat.placeholder".tr()
-                            ,                          hintStyle: const TextStyle(color: Colors.white54),
+                          hintText: "chat.placeholder".tr(),
+                          hintStyle: const TextStyle(color: Colors.white54),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.08),
                           border: OutlineInputBorder(
@@ -284,11 +319,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     /// MICRO
                     GestureDetector(
                       onTap: () {
-                        if (isListening) {
-                          stopListening();
-                        } else {
-                          startListening();
-                        }
+                        isListening ? stopListening() : startListening();
                       },
                       child: Container(
                         padding: const EdgeInsets.all(12),

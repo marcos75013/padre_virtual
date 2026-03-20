@@ -6,6 +6,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+// 🔥 IMPORTS
+import '../../../../common/widgets/app_drawer.dart';
+import '../../../../common/widgets/custom_app_bar.dart';
+
 class VoiceScreen extends StatefulWidget {
   final String language;
   final String gender;
@@ -26,6 +30,9 @@ class VoiceScreen extends StatefulWidget {
 
 class _VoiceScreenState extends State<VoiceScreen>
     with SingleTickerProviderStateMixin {
+
+  /// 🔥 SCAFFOLD KEY (pour drawer)
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final FlutterTts tts = FlutterTts();
   late stt.SpeechToText speech;
@@ -52,16 +59,24 @@ class _VoiceScreenState extends State<VoiceScreen>
     "assets/images/boucheopen.png",
   ];
 
+  /// 🔥 USER STATE (modifiable depuis drawer)
+  late String userName;
+  late int userAge;
+  late String userGender;
+
   @override
   void initState() {
     super.initState();
 
     speech = stt.SpeechToText();
-    selectedLang = _mapLanguage(widget.language);
+    selectedLang = widget.language;
+
+    userName = widget.name;
+    userAge = widget.age;
+    userGender = widget.gender;
 
     initSpeech();
 
-    /// 🔥 HALO INIT
     micPulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -97,18 +112,12 @@ class _VoiceScreenState extends State<VoiceScreen>
   Future<void> initSpeech() async {
     speechReady = await speech.initialize(
       onStatus: (status) {
-        if (status == "done") {
-          unlockAndListen();
-        }
+        if (status == "done") unlockAndListen();
       },
-      onError: (error) {
-        unlockAndListen();
-      },
+      onError: (_) => unlockAndListen(),
     );
 
-    if (speechReady) {
-      startListening();
-    }
+    if (speechReady) startListening();
   }
 
   void unlockAndListen() {
@@ -134,7 +143,7 @@ class _VoiceScreenState extends State<VoiceScreen>
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (_, __, ___) {
         return Material(
-          color: Colors.transparent, // 🔥 IMPORTANT
+          color: Colors.transparent,
           child: Center(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 40),
@@ -142,54 +151,15 @@ class _VoiceScreenState extends State<VoiceScreen>
               decoration: BoxDecoration(
                 color: const Color(0xFF1C2A4A),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.amber.withOpacity(0.3),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                  )
-                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-
-                  /// ✨ ICON
-                  Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.red.withOpacity(0.2),
-                    ),
-                    child: const Icon(
-                      Icons.call_end,
-                      color: Colors.red,
-                      size: 40,
-                    ),
-                  ),
-
+                  const Icon(Icons.call_end, color: Colors.red, size: 40),
                   const SizedBox(height: 20),
-
-                  /// TEXT (sans highlight)
                   Text(
                     "voice.hangup_title".tr(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    "voice.hangup_subtitle".tr(),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                      decoration: TextDecoration.none,
-                    ),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ],
               ),
@@ -207,18 +177,12 @@ class _VoiceScreenState extends State<VoiceScreen>
     });
   }
 
-  String _mapLanguage(String lang) {
-    return lang; // 🔥 CLEAN
-  }
-
   void startMouthAnimation() {
     mouthTimer = Timer.periodic(
       const Duration(milliseconds: 180),
-          (_) {
-        setState(() {
-          frame = (frame + 1) % priestFrames.length;
-        });
-      },
+          (_) => setState(() {
+        frame = (frame + 1) % priestFrames.length;
+      }),
     );
   }
 
@@ -242,9 +206,9 @@ class _VoiceScreenState extends State<VoiceScreen>
             {"role": "user", "content": text}
           ],
           "lang": selectedLang,
-          "gender": widget.gender,
-          "age": widget.age,
-          "name": widget.name,
+          "gender": userGender,
+          "age": userAge,
+          "name": userName,
         }),
       );
 
@@ -266,16 +230,13 @@ class _VoiceScreenState extends State<VoiceScreen>
 
   /// START LISTENING
   Future<void> startListening() async {
-
     if (!speechReady || !canListen) return;
     if (isSpeaking || isProcessing) return;
     if (speech.isListening) return;
 
     canListen = false;
-
     setState(() => listening = true);
 
-    /// 🔥 START HALO
     micPulseController.repeat(reverse: true);
 
     speech.listen(
@@ -284,7 +245,6 @@ class _VoiceScreenState extends State<VoiceScreen>
       onResult: (result) {
         if (result.finalResult) {
           final text = result.recognizedWords;
-
           stopListening();
 
           if (text.trim().isNotEmpty) {
@@ -305,20 +265,44 @@ class _VoiceScreenState extends State<VoiceScreen>
 
     setState(() => listening = false);
 
-    /// 🔥 STOP HALO
     micPulseController.stop();
     micPulseController.reset();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFF0B1C3D),
 
-      appBar: AppBar(
-        title: Text("voice.title".tr()),
-        backgroundColor: Colors.amber,
+      /// 🔥 CUSTOM APPBAR
+      appBar: CustomAppBar(
+        title: "voice.title".tr(),
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
+      ),
+
+      /// 🔥 DRAWER
+      drawer: AppDrawer(
+        currentLanguage: selectedLang,
+        name: userName,
+        age: userAge,
+        gender: userGender,
+
+        onLanguageChanged: (lang) {
+          setState(() {
+            selectedLang = lang;
+          });
+        },
+
+        onUserChanged: (name, age, gender) {
+          setState(() {
+            userName = name;
+            userAge = age;
+            userGender = gender;
+          });
+        },
       ),
 
       body: Center(
@@ -360,11 +344,10 @@ class _VoiceScreenState extends State<VoiceScreen>
 
             const SizedBox(height: 40),
 
-            /// 🎤 MICRO + HALO
+            /// 🎤 MICRO
             AnimatedBuilder(
               animation: micPulseAnimation,
               builder: (_, __) {
-
                 return Stack(
                   alignment: Alignment.center,
                   children: [

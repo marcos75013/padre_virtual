@@ -170,6 +170,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: gender != null && nameController.text.isNotEmpty
                         ? () async {
 
+                      /// ✅ RECUP LANG AVANT
+                      final lang = context.locale.languageCode;
+
                       /// 💾 SAVE USER
                       await UserPreferences.saveUser(
                         name: nameController.text.trim(),
@@ -177,12 +180,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         age: age,
                       );
 
+                      /// 🔒 SAFETY (important si async)
+                      if (!mounted) return;
+
                       /// 🚀 NAVIGATION
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ConversationModeScreen(
-                            language: context.locale.languageCode,
+                            language: lang,
                             gender: gender!,
                             age: age,
                             name: nameController.text.trim(),
