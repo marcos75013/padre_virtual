@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+// 🔥 IMPORTS
+import '../../../../common/widgets/app_drawer.dart';
+import '../../../../common/widgets/custom_app_bar.dart';
+
 class ChatScreen extends StatefulWidget {
   final String language;
   final String gender;
@@ -24,8 +28,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   final TextEditingController controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController(); // 🔥 NEW
+  final ScrollController _scrollController = ScrollController();
 
   late stt.SpeechToText speech;
 
@@ -36,21 +42,25 @@ class _ChatScreenState extends State<ChatScreen> {
 
   late String selectedLang;
 
+  late String userName;
+  late int userAge;
+  late String userGender;
+
   @override
   void initState() {
     super.initState();
 
     speech = stt.SpeechToText();
-    selectedLang = _mapLanguage(widget.language);
+
+    selectedLang = widget.language;
+    userName = widget.name;
+    userAge = widget.age;
+    userGender = widget.gender;
   }
 
-  String _mapLanguage(String lang) {
-    return lang; // 🔥 IMPORTANT
-  }
-
-  /// 🔥 SCROLL AUTO
+  /// 🔥 SCROLL AUTO (FIX PROPRE)
   void _scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 100), () {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -63,46 +73,63 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future askPriest() async {
 
-    if (controller.text.isEmpty) return;
-
-    final userMessage = controller.text;
+    final text = controller.text.trim();
+    if (text.isEmpty || isTyping) return;
 
     setState(() {
       messages.add({
         "role": "user",
-        "content": userMessage
+        "content": text
       });
       isTyping = true;
     });
 
     controller.clear();
+    _scrollToBottom();
 
-    _scrollToBottom(); // 🔥 après message user
+    try {
+      final res = await http.post(
+        Uri.parse("http://192.168.1.36:3000/chat"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "messages": [
+            {"role": "user", "content": text}
+          ],
+          "lang": selectedLang,
+          "gender": userGender,
+          "age": userAge,
+          "name": userName,
+        }),
+      );
 
-    final res = await http.post(
-      Uri.parse("http://192.168.1.36:3000/chat"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "messages": messages,
-        "lang": selectedLang,
-        "gender": widget.gender,
-        "age": widget.age,
-        "name": widget.name,
-      }),
-    );
+      if (res.statusCode != 200) throw Exception();
 
-    final data = jsonDecode(res.body);
+      final data = jsonDecode(res.body);
+      final answer = data["answer"] ?? "Erreur...";
 
-    setState(() {
-      isTyping = false;
+      if (!mounted) return;
 
-      messages.add({
-        "role": "assistant",
-        "content": data["answer"]
+      setState(() {
+        isTyping = false;
+        messages.add({
+          "role": "assistant",
+          "content": answer
+        });
       });
-    });
 
-    _scrollToBottom(); // 🔥 après réponse
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        isTyping = false;
+        messages.add({
+          "role": "assistant",
+          "content": "Une erreur est survenue..."
+        });
+      });
+    }
+
+    _scrollToBottom();
   }
 
   Future<void> startListening() async {
@@ -190,19 +217,34 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
 
-    /// 🔥 scroll automatique après render
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToBottom();
-    });
-
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFF0B1C3D),
 
-      appBar: AppBar(
-        title: Text("chat.title".tr())
-        ,
-        backgroundColor: Colors.amber,
-        elevation: 0,
+      appBar: CustomAppBar(
+        title: "chat.title".tr(),
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
+      ),
+
+      drawer: AppDrawer(
+        currentLanguage: selectedLang,
+        name: userName,
+        age: userAge,
+        gender: userGender,
+        onLanguageChanged: (lang) {
+          setState(() {
+            selectedLang = lang;
+          });
+        },
+        onUserChanged: (name, age, gender) {
+          setState(() {
+            userName = name;
+            userAge = age;
+            userGender = gender;
+          });
+        },
       ),
 
       body: SafeArea(
@@ -211,29 +253,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
             const SizedBox(height: 10),
 
-            /// HALO + IMAGE
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        Colors.amber.withOpacity(0.4),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-                Image.asset(
-                  "assets/images/boucheopen.png",
-                  height: 180,
-                ),
-              ],
-            ),
+            /// IMAGE PRÊTRE
+            Image.asset("assets/images/boucheopen.png", height: 150),
 
             const Divider(color: Colors.white30),
 
@@ -244,78 +265,68 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: const EdgeInsets.all(16),
                 itemCount: messages.length + (isTyping ? 1 : 0),
                 itemBuilder: (context, index) {
-
                   if (index < messages.length) {
                     return buildMessage(messages[index]);
                   } else {
                     return buildTypingIndicator();
                   }
-
                 },
               ),
             ),
 
             /// INPUT
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
 
-                    Expanded(
-                      child: TextField(
-                        controller: controller,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                            hintText: "chat.placeholder".tr()
-                            ,                          hintStyle: const TextStyle(color: Colors.white54),
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.08),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
-                          ),
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: "chat.placeholder".tr(),
+                        hintStyle: const TextStyle(color: Colors.white54),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.08),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
                         ),
                       ),
                     ),
+                  ),
 
-                    const SizedBox(width: 10),
+                  const SizedBox(width: 10),
 
-                    /// MICRO
-                    GestureDetector(
-                      onTap: () {
-                        if (isListening) {
-                          stopListening();
-                        } else {
-                          startListening();
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isListening ? Colors.red : Colors.deepPurple,
-                        ),
-                        child: const Icon(Icons.mic, color: Colors.white),
+                  GestureDetector(
+                    onTap: () {
+                      isListening ? stopListening() : startListening();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isListening ? Colors.red : Colors.deepPurple,
                       ),
+                      child: const Icon(Icons.mic, color: Colors.white),
                     ),
+                  ),
 
-                    const SizedBox(width: 8),
+                  const SizedBox(width: 8),
 
-                    /// SEND
-                    GestureDetector(
-                      onTap: askPriest,
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.deepPurple,
-                        ),
-                        child: const Icon(Icons.send, color: Colors.white),
+                  GestureDetector(
+                    onTap: askPriest,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.deepPurple,
                       ),
+                      child: const Icon(Icons.send, color: Colors.white),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -325,7 +336,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-/// 🔥 ANIMATION DES 3 POINTS
+/// 🔥 DOTS
 class TypingDots extends StatefulWidget {
   const TypingDots({super.key});
 

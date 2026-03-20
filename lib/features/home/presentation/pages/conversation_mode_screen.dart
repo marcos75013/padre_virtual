@@ -1,9 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../common/widgets/app_drawer.dart';
+import '../../../../common/widgets/custom_app_bar.dart';
 import '../../../chat/presentation/pages/chat_screen.dart';
 import '../../../voice/presentation/pages/voice_screen.dart';
 
-class ConversationModeScreen extends StatelessWidget {
+
+class ConversationModeScreen extends StatefulWidget {
   final String language;
   final String gender;
   final int age;
@@ -18,15 +22,65 @@ class ConversationModeScreen extends StatelessWidget {
   });
 
   @override
+  State<ConversationModeScreen> createState() => _ConversationModeScreenState();
+}
+
+class _ConversationModeScreenState extends State<ConversationModeScreen> {
+
+  /// 🔥 SCAFFOLD KEY
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  /// 🔥 STATE LOCAL
+  late String selectedLang;
+  late String userName;
+  late int userAge;
+  late String userGender;
+
+  @override
+  void initState() {
+    super.initState();
+
+    selectedLang = widget.language;
+    userName = widget.name;
+    userAge = widget.age;
+    userGender = widget.gender;
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFF0B1C3D),
 
-      appBar: AppBar(
-        title: Text("mode.title".tr())
-        ,
-        backgroundColor: Colors.amber,
-        elevation: 0,
+      /// 🔥 APPBAR
+      appBar: CustomAppBar(
+        title: "mode.title".tr(),
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
+      ),
+
+      /// 🔥 DRAWER
+      drawer: AppDrawer(
+        currentLanguage: selectedLang,
+        name: userName,
+        age: userAge,
+        gender: userGender,
+
+        onLanguageChanged: (lang) {
+          setState(() {
+            selectedLang = lang;
+          });
+        },
+
+        onUserChanged: (name, age, gender) {
+          setState(() {
+            userName = name;
+            userAge = age;
+            userGender = gender;
+          });
+        },
       ),
 
       body: Padding(
@@ -37,22 +91,20 @@ class ConversationModeScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            /// TEXTE
+            /// 🔥 TEXTE
             _modeCard(
-              context,
               icon: Icons.chat,
-                title: "mode.text".tr()
-                ,
+              title: "mode.text".tr(),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => ChatScreen(
-                      language: language,
-                      gender: gender,
-                      age: age,
-                      name: name,
-                    )
+                      language: selectedLang,
+                      gender: userGender,
+                      age: userAge,
+                      name: userName,
+                    ),
                   ),
                 );
               },
@@ -60,22 +112,20 @@ class ConversationModeScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            /// VOIX
+            /// 🔥 VOIX
             _modeCard(
-              context,
               icon: Icons.mic,
-                title: "mode.voice".tr()
-                ,
+              title: "mode.voice".tr(),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => VoiceScreen(
-                      language: language,
-                      gender: gender,
-                      age: age,
-                      name: name,
-                    )
+                      language: selectedLang,
+                      gender: userGender,
+                      age: userAge,
+                      name: userName,
+                    ),
                   ),
                 );
               },
@@ -86,12 +136,12 @@ class ConversationModeScreen extends StatelessWidget {
     );
   }
 
-  Widget _modeCard(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required VoidCallback onTap,
-      }) {
+  /// 🔥 CARD UI
+  Widget _modeCard({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
 

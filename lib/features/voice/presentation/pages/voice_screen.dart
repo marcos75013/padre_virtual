@@ -6,6 +6,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+// 🔥 IMPORTS
+import '../../../../common/widgets/app_drawer.dart';
+import '../../../../common/widgets/custom_app_bar.dart';
+
 class VoiceScreen extends StatefulWidget {
   final String language;
   final String gender;
@@ -27,6 +31,8 @@ class VoiceScreen extends StatefulWidget {
 class _VoiceScreenState extends State<VoiceScreen>
     with SingleTickerProviderStateMixin {
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   final FlutterTts tts = FlutterTts();
   late stt.SpeechToText speech;
 
@@ -41,7 +47,6 @@ class _VoiceScreenState extends State<VoiceScreen>
   int frame = 0;
   Timer? mouthTimer;
 
-  /// 🔥 HALO MICRO
   late AnimationController micPulseController;
   late Animation<double> micPulseAnimation;
 
@@ -52,16 +57,23 @@ class _VoiceScreenState extends State<VoiceScreen>
     "assets/images/boucheopen.png",
   ];
 
+  late String userName;
+  late int userAge;
+  late String userGender;
+
   @override
   void initState() {
     super.initState();
 
     speech = stt.SpeechToText();
-    selectedLang = _mapLanguage(widget.language);
+
+    selectedLang = widget.language;
+    userName = widget.name;
+    userAge = widget.age;
+    userGender = widget.gender;
 
     initSpeech();
 
-    /// 🔥 HALO INIT
     micPulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -71,6 +83,7 @@ class _VoiceScreenState extends State<VoiceScreen>
       CurvedAnimation(parent: micPulseController, curve: Curves.easeInOut),
     );
 
+    /// 🔥 TTS EVENTS
     tts.setStartHandler(() {
       isSpeaking = true;
       stopListening();
@@ -93,22 +106,16 @@ class _VoiceScreenState extends State<VoiceScreen>
     super.dispose();
   }
 
-  /// INIT MICRO
+  /// 🔥 INIT MICRO
   Future<void> initSpeech() async {
     speechReady = await speech.initialize(
       onStatus: (status) {
-        if (status == "done") {
-          unlockAndListen();
-        }
+        if (status == "done") unlockAndListen();
       },
-      onError: (error) {
-        unlockAndListen();
-      },
+      onError: (_) => unlockAndListen(),
     );
 
-    if (speechReady) {
-      startListening();
-    }
+    if (speechReady) startListening();
   }
 
   void unlockAndListen() {
@@ -118,116 +125,7 @@ class _VoiceScreenState extends State<VoiceScreen>
     });
   }
 
-  /// 📞 RACCROCHER
-  Future<void> hangUp() async {
-    await speech.stop();
-    await tts.stop();
-    stopMouthAnimation();
-    micPulseController.stop();
-
-    if (!mounted) return;
-
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.7),
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (_, __, ___) {
-        return Material(
-          color: Colors.transparent, // 🔥 IMPORTANT
-          child: Center(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 40),
-              padding: const EdgeInsets.all(25),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1C2A4A),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.amber.withOpacity(0.3),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                  )
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-
-                  /// ✨ ICON
-                  Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.red.withOpacity(0.2),
-                    ),
-                    child: const Icon(
-                      Icons.call_end,
-                      color: Colors.red,
-                      size: 40,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  /// TEXT (sans highlight)
-                  Text(
-                    "voice.hangup_title".tr(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    "voice.hangup_subtitle".tr(),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.pop(context);
-        Navigator.pop(context);
-      }
-    });
-  }
-
-  String _mapLanguage(String lang) {
-    return lang; // 🔥 CLEAN
-  }
-
-  void startMouthAnimation() {
-    mouthTimer = Timer.periodic(
-      const Duration(milliseconds: 180),
-          (_) {
-        setState(() {
-          frame = (frame + 1) % priestFrames.length;
-        });
-      },
-    );
-  }
-
-  void stopMouthAnimation() {
-    mouthTimer?.cancel();
-    setState(() => frame = 0);
-  }
-
-  /// API
+  /// 🔥 API CALL (FIX IMPORTANT)
   Future<void> askPriest(String text) async {
     if (isProcessing) return;
 
@@ -242,40 +140,37 @@ class _VoiceScreenState extends State<VoiceScreen>
             {"role": "user", "content": text}
           ],
           "lang": selectedLang,
-          "gender": widget.gender,
-          "age": widget.age,
-          "name": widget.name,
+          "gender": userGender,
+          "age": userAge,
+          "name": userName,
         }),
       );
 
-      final data = jsonDecode(res.body);
+      if (res.statusCode != 200) throw Exception();
 
-      if (data["answer"] == null) {
-        await tts.speak("Erreur.");
-        unlockAndListen();
-        return;
-      }
+      final data = jsonDecode(res.body);
+      final answer = data["answer"] ?? "Erreur";
 
       await tts.setLanguage(selectedLang);
-      await tts.speak(data["answer"]);
+      await tts.speak(answer);
 
-    } catch (_) {}
+    } catch (_) {
+      await tts.speak("Une erreur est survenue");
+      unlockAndListen();
+    }
 
     isProcessing = false;
   }
 
-  /// START LISTENING
+  /// 🔥 LISTEN
   Future<void> startListening() async {
-
     if (!speechReady || !canListen) return;
     if (isSpeaking || isProcessing) return;
     if (speech.isListening) return;
 
     canListen = false;
-
     setState(() => listening = true);
 
-    /// 🔥 START HALO
     micPulseController.repeat(reverse: true);
 
     speech.listen(
@@ -284,7 +179,6 @@ class _VoiceScreenState extends State<VoiceScreen>
       onResult: (result) {
         if (result.finalResult) {
           final text = result.recognizedWords;
-
           stopListening();
 
           if (text.trim().isNotEmpty) {
@@ -297,7 +191,7 @@ class _VoiceScreenState extends State<VoiceScreen>
     );
   }
 
-  /// STOP LISTENING
+  /// 🔥 STOP
   Future<void> stopListening() async {
     if (!speech.isListening) return;
 
@@ -305,20 +199,65 @@ class _VoiceScreenState extends State<VoiceScreen>
 
     setState(() => listening = false);
 
-    /// 🔥 STOP HALO
     micPulseController.stop();
     micPulseController.reset();
   }
 
+  /// 🔥 BOUCHE
+  void startMouthAnimation() {
+    mouthTimer = Timer.periodic(
+      const Duration(milliseconds: 180),
+          (_) => setState(() {
+        frame = (frame + 1) % priestFrames.length;
+      }),
+    );
+  }
+
+  void stopMouthAnimation() {
+    mouthTimer?.cancel();
+    setState(() => frame = 0);
+  }
+
+  /// 🔥 RACCROCHER
+  Future<void> hangUp() async {
+    await speech.stop();
+    await tts.stop();
+    stopMouthAnimation();
+    micPulseController.stop();
+
+    if (!mounted) return;
+
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFF0B1C3D),
 
-      appBar: AppBar(
-        title: Text("voice.title".tr()),
-        backgroundColor: Colors.amber,
+      appBar: CustomAppBar(
+        title: "voice.title".tr(),
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
+      ),
+
+      drawer: AppDrawer(
+        currentLanguage: selectedLang,
+        name: userName,
+        age: userAge,
+        gender: userGender,
+        onLanguageChanged: (lang) {
+          setState(() => selectedLang = lang);
+        },
+        onUserChanged: (name, age, gender) {
+          setState(() {
+            userName = name;
+            userAge = age;
+            userGender = gender;
+          });
+        },
       ),
 
       body: Center(
@@ -326,7 +265,7 @@ class _VoiceScreenState extends State<VoiceScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
 
-            /// PRÊTRE
+            /// 🔥 PRÊTRE ANIMÉ
             Stack(
               alignment: Alignment.center,
               children: [
@@ -360,11 +299,10 @@ class _VoiceScreenState extends State<VoiceScreen>
 
             const SizedBox(height: 40),
 
-            /// 🎤 MICRO + HALO
+            /// 🔥 MICRO
             AnimatedBuilder(
               animation: micPulseAnimation,
               builder: (_, __) {
-
                 return Stack(
                   alignment: Alignment.center,
                   children: [
@@ -408,7 +346,7 @@ class _VoiceScreenState extends State<VoiceScreen>
 
             const SizedBox(height: 30),
 
-            /// 📞 RACCROCHER
+            /// 🔥 RACCROCHER
             GestureDetector(
               onTap: hangUp,
               child: Container(

@@ -37,28 +37,11 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           child: Column(
             children: [
 
-              const SizedBox(height: 40),
-
-              /// ✨ ICON / AVATAR
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.amber.withOpacity(0.3),
-                      blurRadius: 40,
-                      spreadRadius: 5,
-                    )
-                  ],
-                ),
-
-              ),
-
-              const SizedBox(height: 20),
+              const SizedBox(height: 60),
 
               /// TITLE
               Text(
-                "Choose your language".tr(),
+                "Choose your language",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 26,
@@ -69,19 +52,11 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
               const SizedBox(height: 10),
 
-              /// SUBTITLE
-              Text(
-                "Select your preferred language to continue",
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 15,
-                ),
-                textAlign: TextAlign.center,
-              ),
 
-              const SizedBox(height: 30),
 
-              /// 🌍 LISTE DES LANGUES
+              const SizedBox(height: 40),
+
+              /// LANGUAGES
               Column(
                 children: languages.map((lang) {
                   return _languageCard(lang);
@@ -90,7 +65,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
               const Spacer(),
 
-              /// 🚀 BUTTON
+              /// BUTTON
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -105,11 +80,15 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
                     await _saveLanguage(selectedLocale);
 
+                    if (!mounted) return;
+
                     context.setLocale(selectedLocale);
 
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => const HomeScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const HomeScreen(),
+                      ),
                     );
                   },
                   child: Text(
@@ -130,7 +109,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
     );
   }
 
-  /// 🌍 LANGUAGE CARD
   Widget _languageCard(Map<String, dynamic> lang) {
 
     final isSelected = selectedLocale == lang["locale"];
@@ -144,24 +122,16 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-
         decoration: BoxDecoration(
           color: isSelected
               ? Colors.amber
               : Colors.white.withOpacity(0.08),
           borderRadius: BorderRadius.circular(14),
         ),
-
         child: Row(
           children: [
-
-            Text(
-              lang["flag"],
-              style: const TextStyle(fontSize: 24),
-            ),
-
+            Text(lang["flag"], style: const TextStyle(fontSize: 24)),
             const SizedBox(width: 12),
-
             Expanded(
               child: Text(
                 lang["name"],
@@ -172,7 +142,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                 ),
               ),
             ),
-
             if (isSelected)
               const Icon(Icons.check, color: Colors.black)
           ],

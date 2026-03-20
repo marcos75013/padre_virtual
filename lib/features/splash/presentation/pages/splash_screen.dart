@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../home/presentation/home_screen.dart';
+import '../../../home/presentation/pages/conversation_mode_screen.dart';
 import '../../../language/presentation/pages/language_selection_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -52,21 +53,46 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(seconds: 3));
 
     final prefs = await SharedPreferences.getInstance();
-    final savedLang = prefs.getString("lang");
 
+    final savedLang = prefs.getString("lang");
+    final savedName = prefs.getString("name");
+    final savedGender = prefs.getString("gender");
+    final savedAge = prefs.getInt("age");
+
+    /// 🧠 1. PAS DE LANGUE → écran langue
     if (savedLang == null) {
-      /// 👉 PREMIÈRE FOIS → choix langue
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LanguageSelectionScreen()),
+        MaterialPageRoute(
+          builder: (_) => const LanguageSelectionScreen(),
+        ),
       );
-    } else {
-      /// 👉 langue déjà choisie → Home
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      return;
     }
+
+    /// 🧠 2. LANGUE OK MAIS PAS DE PROFIL → Home
+    if (savedName == null || savedGender == null || savedAge == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const HomeScreen(),
+        ),
+      );
+      return;
+    }
+
+    /// 🧠 3. TOUT EST OK → DIRECT MODE SCREEN 🚀
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ConversationModeScreen(
+          language: savedLang,
+          name: savedName,
+          gender: savedGender,
+          age: savedAge,
+        ),
+      ),
+    );
   }
 
   @override
