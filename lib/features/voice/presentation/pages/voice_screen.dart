@@ -31,7 +31,6 @@ class VoiceScreen extends StatefulWidget {
 class _VoiceScreenState extends State<VoiceScreen>
     with SingleTickerProviderStateMixin {
 
-  /// 🔥 SCAFFOLD KEY (pour drawer)
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final FlutterTts tts = FlutterTts();
@@ -48,7 +47,6 @@ class _VoiceScreenState extends State<VoiceScreen>
   int frame = 0;
   Timer? mouthTimer;
 
-  /// 🔥 HALO MICRO
   late AnimationController micPulseController;
   late Animation<double> micPulseAnimation;
 
@@ -59,7 +57,6 @@ class _VoiceScreenState extends State<VoiceScreen>
     "assets/images/boucheopen.png",
   ];
 
-  /// 🔥 USER STATE (modifiable depuis drawer)
   late String userName;
   late int userAge;
   late String userGender;
@@ -69,8 +66,8 @@ class _VoiceScreenState extends State<VoiceScreen>
     super.initState();
 
     speech = stt.SpeechToText();
-    selectedLang = widget.language;
 
+    selectedLang = widget.language;
     userName = widget.name;
     userAge = widget.age;
     userGender = widget.gender;
@@ -86,6 +83,7 @@ class _VoiceScreenState extends State<VoiceScreen>
       CurvedAnimation(parent: micPulseController, curve: Curves.easeInOut),
     );
 
+    /// 🔥 TTS EVENTS
     tts.setStartHandler(() {
       isSpeaking = true;
       stopListening();
@@ -108,7 +106,7 @@ class _VoiceScreenState extends State<VoiceScreen>
     super.dispose();
   }
 
-  /// INIT MICRO
+  /// 🔥 INIT MICRO
   Future<void> initSpeech() async {
     speechReady = await speech.initialize(
       onStatus: (status) {
@@ -127,71 +125,7 @@ class _VoiceScreenState extends State<VoiceScreen>
     });
   }
 
-  /// 📞 RACCROCHER
-  Future<void> hangUp() async {
-    await speech.stop();
-    await tts.stop();
-    stopMouthAnimation();
-    micPulseController.stop();
-
-    if (!mounted) return;
-
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.7),
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (_, __, ___) {
-        return Material(
-          color: Colors.transparent,
-          child: Center(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 40),
-              padding: const EdgeInsets.all(25),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1C2A4A),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.call_end, color: Colors.red, size: 40),
-                  const SizedBox(height: 20),
-                  Text(
-                    "voice.hangup_title".tr(),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.pop(context);
-        Navigator.pop(context);
-      }
-    });
-  }
-
-  void startMouthAnimation() {
-    mouthTimer = Timer.periodic(
-      const Duration(milliseconds: 180),
-          (_) => setState(() {
-        frame = (frame + 1) % priestFrames.length;
-      }),
-    );
-  }
-
-  void stopMouthAnimation() {
-    mouthTimer?.cancel();
-    setState(() => frame = 0);
-  }
-
-  /// API
+  /// 🔥 API CALL (FIX IMPORTANT)
   Future<void> askPriest(String text) async {
     if (isProcessing) return;
 
@@ -212,23 +146,23 @@ class _VoiceScreenState extends State<VoiceScreen>
         }),
       );
 
-      final data = jsonDecode(res.body);
+      if (res.statusCode != 200) throw Exception();
 
-      if (data["answer"] == null) {
-        await tts.speak("Erreur.");
-        unlockAndListen();
-        return;
-      }
+      final data = jsonDecode(res.body);
+      final answer = data["answer"] ?? "Erreur";
 
       await tts.setLanguage(selectedLang);
-      await tts.speak(data["answer"]);
+      await tts.speak(answer);
 
-    } catch (_) {}
+    } catch (_) {
+      await tts.speak("Une erreur est survenue");
+      unlockAndListen();
+    }
 
     isProcessing = false;
   }
 
-  /// START LISTENING
+  /// 🔥 LISTEN
   Future<void> startListening() async {
     if (!speechReady || !canListen) return;
     if (isSpeaking || isProcessing) return;
@@ -257,7 +191,7 @@ class _VoiceScreenState extends State<VoiceScreen>
     );
   }
 
-  /// STOP LISTENING
+  /// 🔥 STOP
   Future<void> stopListening() async {
     if (!speech.isListening) return;
 
@@ -269,13 +203,39 @@ class _VoiceScreenState extends State<VoiceScreen>
     micPulseController.reset();
   }
 
+  /// 🔥 BOUCHE
+  void startMouthAnimation() {
+    mouthTimer = Timer.periodic(
+      const Duration(milliseconds: 180),
+          (_) => setState(() {
+        frame = (frame + 1) % priestFrames.length;
+      }),
+    );
+  }
+
+  void stopMouthAnimation() {
+    mouthTimer?.cancel();
+    setState(() => frame = 0);
+  }
+
+  /// 🔥 RACCROCHER
+  Future<void> hangUp() async {
+    await speech.stop();
+    await tts.stop();
+    stopMouthAnimation();
+    micPulseController.stop();
+
+    if (!mounted) return;
+
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFF0B1C3D),
 
-      /// 🔥 CUSTOM APPBAR
       appBar: CustomAppBar(
         title: "voice.title".tr(),
         onMenuPressed: () {
@@ -283,19 +243,14 @@ class _VoiceScreenState extends State<VoiceScreen>
         },
       ),
 
-      /// 🔥 DRAWER
       drawer: AppDrawer(
         currentLanguage: selectedLang,
         name: userName,
         age: userAge,
         gender: userGender,
-
         onLanguageChanged: (lang) {
-          setState(() {
-            selectedLang = lang;
-          });
+          setState(() => selectedLang = lang);
         },
-
         onUserChanged: (name, age, gender) {
           setState(() {
             userName = name;
@@ -310,7 +265,7 @@ class _VoiceScreenState extends State<VoiceScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
 
-            /// PRÊTRE
+            /// 🔥 PRÊTRE ANIMÉ
             Stack(
               alignment: Alignment.center,
               children: [
@@ -344,7 +299,7 @@ class _VoiceScreenState extends State<VoiceScreen>
 
             const SizedBox(height: 40),
 
-            /// 🎤 MICRO
+            /// 🔥 MICRO
             AnimatedBuilder(
               animation: micPulseAnimation,
               builder: (_, __) {
@@ -391,7 +346,7 @@ class _VoiceScreenState extends State<VoiceScreen>
 
             const SizedBox(height: 30),
 
-            /// 📞 RACCROCHER
+            /// 🔥 RACCROCHER
             GestureDetector(
               onTap: hangUp,
               child: Container(
