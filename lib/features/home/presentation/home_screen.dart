@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:padre_virtual/features/home/presentation/pages/conversation_mode_screen.dart';
 import 'package:padre_virtual/core/services/user_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +17,39 @@ class _HomeScreenState extends State<HomeScreen> {
   int age = 25;
 
   final TextEditingController nameController = TextEditingController();
+
+  bool isValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+    nameController.addListener(_validateForm);
+  }
+
+  Future<void> _loadUser() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      nameController.text = prefs.getString("name") ?? "";
+      gender = prefs.getString("gender");
+      age = prefs.getInt("age") ?? 25;
+    });
+
+    _validateForm();
+  }
+
+  void _validateForm() {
+    setState(() {
+      isValid = nameController.text.trim().isNotEmpty && gender != null;
+    });
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 20),
 
-                /// TITLE
                 Text(
                   "home.title".tr(),
                   style: const TextStyle(
@@ -65,7 +98,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 20),
 
-                /// DESCRIPTION
                 Text(
                   "home.description".tr(),
                   style: const TextStyle(
@@ -77,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 30),
 
-                /// PRENOM
+                /// NAME
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -105,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 20),
 
-                /// SEXE
+                /// GENDER
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -156,34 +188,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 20),
 
-                /// BOUTON
+                /// BUTTON
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
+                      backgroundColor: isValid ? Colors.amber : Colors.grey,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    onPressed: gender != null && nameController.text.isNotEmpty
+                    onPressed: isValid
                         ? () async {
 
-                      /// ✅ RECUP LANG AVANT
                       final lang = context.locale.languageCode;
 
-                      /// 💾 SAVE USER
                       await UserPreferences.saveUser(
                         name: nameController.text.trim(),
                         gender: gender!,
                         age: age,
                       );
 
-                      /// 🔒 SAFETY (important si async)
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool("onboarding_done", true);
+
                       if (!mounted) return;
 
-                      /// 🚀 NAVIGATION
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
@@ -195,7 +226,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       );
-
                     }
                         : null,
                     child: Text(
@@ -226,6 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: () {
           setState(() {
             gender = value;
+            _validateForm();
           });
         },
         child: Container(
