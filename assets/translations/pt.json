@@ -12,8 +12,12 @@
   },
   "voice": {
     "title": "Conversa por voz",
-    "listening": "Estou te ouvindo...",
-    "tap": "Toque para falar"
+    "listening": "🎤 Estou te ouvindo...",
+    "speaking": "🗣️ O padre está falando...",
+    "processing": "⏳ Processando...",
+    "tap": "Toque para falar",
+    "hangup_title": "Chamada encerrada",
+    "hangup_subtitle": "Que Deus cuide de você"
   },
   "chat": {
     "title": "Conversa por texto",

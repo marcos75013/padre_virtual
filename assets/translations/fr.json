@@ -12,8 +12,12 @@
   },
   "voice": {
     "title": "Conversation vocale",
-    "listening": "Je vous écoute...",
-    "tap": "Appuyez pour parler"
+    "listening": "🎤 Je vous écoute...",
+    "speaking": "🗣️ Le prêtre parle...",
+    "processing": "⏳ Traitement...",
+    "tap": "Appuyez pour parler",
+    "hangup_title": "Appel terminé",
+    "hangup_subtitle": "Que Dieu veille sur vous"
   },
   "chat": {
     "title": "Conversation texte",

@@ -171,24 +171,24 @@ class _VoiceScreenState extends State<VoiceScreen>
                   const SizedBox(height: 20),
 
                   /// TEXT (sans highlight)
-                  const Text(
-                    "Appel terminé",
-                    style: TextStyle(
+                  Text(
+                    "voice.hangup_title".tr(),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.none, // 🔥 FIX
+                      decoration: TextDecoration.none,
                     ),
                   ),
 
                   const SizedBox(height: 10),
 
-                  const Text(
-                    "Que Dieu veille sur vous",
-                    style: TextStyle(
+                  Text(
+                    "voice.hangup_subtitle".tr(),
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
-                      decoration: TextDecoration.none, // 🔥 FIX
+                      decoration: TextDecoration.none,
                     ),
                   ),
                 ],
@@ -208,14 +208,7 @@ class _VoiceScreenState extends State<VoiceScreen>
   }
 
   String _mapLanguage(String lang) {
-    switch (lang) {
-      case "Français":
-        return "fr-FR";
-      case "English":
-        return "en-US";
-      default:
-        return "fr-FR";
-    }
+    return lang; // 🔥 CLEAN
   }
 
   void startMouthAnimation() {
@@ -358,10 +351,10 @@ class _VoiceScreenState extends State<VoiceScreen>
 
             Text(
               isSpeaking
-                  ? "🗣️ Le prêtre parle..."
+                  ? "voice.speaking".tr()
                   : listening
-                  ? "🎤 Je vous écoute..."
-                  : "⏳ Traitement...",
+                  ? "voice.listening".tr()
+                  : "voice.processing".tr(),
               style: const TextStyle(color: Colors.white),
             ),
 
