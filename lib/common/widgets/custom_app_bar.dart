@@ -19,23 +19,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       centerTitle: true,
 
-      /// 🔥 LOGO ou BACK
+      leadingWidth: 90, // 🔥 AUGMENTE L’ESPACE
+
       leading: canPop
           ? IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.black),
         onPressed: () => Navigator.pop(context),
       )
-          : Padding(
-        padding: const EdgeInsets.all(8),
+          : Center(
         child: Image.asset(
-          "assets/images/padre.png",
-          errorBuilder: (context, error, stackTrace) {
-            /// ✅ fallback si logo absent
-            return const Icon(Icons.church, color: Colors.black);
-          },
+          "assets/images/logo1.png",
+          height: 60, // taille contrôlée
         ),
       ),
-
       title: Text(
         title,
         style: const TextStyle(
