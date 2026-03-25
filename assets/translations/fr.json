@@ -36,5 +36,38 @@
     "english": "Anglais",
     "portuguese": "Portugais",
     "save": "Sauvegarder"
+  },
+  "conversation": {
+    "hello": "Bonjour {} 🙏",
+    "subtitle": "Comment puis-je t’accompagner aujourd’hui ?",
+
+    "chat_title": "Parler avec le prêtre",
+    "chat_subtitle": "Chat ou message écrit",
+
+    "voice_title": "Conversation vocale",
+    "voice_subtitle": "Parle directement avec le prêtre",
+
+    "prayer_title": "Demander une prière",
+    "prayer_subtitle": "Selon ton état émotionnel",
+
+    "confess_title": "Se confier",
+    "confess_subtitle": "Exprime ce que tu ressens",
+
+    "verse_title": "Verset du jour",
+    "verse_subtitle": "Un message pour aujourd’hui",
+
+    "confess_dialog_title": "Exprime-toi",
+    "confess_placeholder": "Écris ce que tu ressens...",
+    "cancel": "Annuler",
+    "send": "Envoyer",
+
+    "moods": {
+      "sad": "😢 Triste",
+      "angry": "😡 Colère",
+      "anxious": "😨 Anxieux",
+      "happy": "😊 Heureux",
+      "grateful": "🙏 Reconnaissant",
+      "lost": "😔 Perdu"
+    }
   }
 }

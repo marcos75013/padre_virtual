@@ -36,5 +36,38 @@
     "english": "Inglês",
     "portuguese": "Português",
     "save": "Salvar"
+  },
+  "conversation": {
+    "hello": "Olá {} 🙏",
+    "subtitle": "Como posso te ajudar hoje?",
+
+    "chat_title": "Falar com o padre",
+    "chat_subtitle": "Chat ou mensagem",
+
+    "voice_title": "Conversa por voz",
+    "voice_subtitle": "Fale diretamente com o padre",
+
+    "prayer_title": "Pedir uma oração",
+    "prayer_subtitle": "De acordo com seu estado emocional",
+
+    "confess_title": "Se abrir",
+    "confess_subtitle": "Expresse o que você sente",
+
+    "verse_title": "Versículo do dia",
+    "verse_subtitle": "Uma mensagem para hoje",
+
+    "confess_dialog_title": "Expresse-se",
+    "confess_placeholder": "Escreva o que você sente...",
+    "cancel": "Cancelar",
+    "send": "Enviar",
+
+    "moods": {
+      "sad": "😢 Triste",
+      "angry": "😡 Raiva",
+      "anxious": "😨 Ansioso",
+      "happy": "😊 Feliz",
+      "grateful": "🙏 Grato",
+      "lost": "😔 Perdido"
+    }
   }
 }

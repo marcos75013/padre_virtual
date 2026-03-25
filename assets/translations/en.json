@@ -36,5 +36,38 @@
     "english": "English",
     "portuguese": "Portuguese",
     "save": "Save"
+  },
+  "conversation": {
+    "hello": "Hello {} 🙏",
+    "subtitle": "How can I guide you today?",
+
+    "chat_title": "Talk to the priest",
+    "chat_subtitle": "Chat or text message",
+
+    "voice_title": "Voice conversation",
+    "voice_subtitle": "Speak directly with the priest",
+
+    "prayer_title": "Ask for a prayer",
+    "prayer_subtitle": "Based on your feelings",
+
+    "confess_title": "Open your heart",
+    "confess_subtitle": "Express what you feel",
+
+    "verse_title": "Verse of the day",
+    "verse_subtitle": "A message for today",
+
+    "confess_dialog_title": "Express yourself",
+    "confess_placeholder": "Write what you feel...",
+    "cancel": "Cancel",
+    "send": "Send",
+
+    "moods": {
+      "sad": "😢 Sad",
+      "angry": "😡 Angry",
+      "anxious": "😨 Anxious",
+      "happy": "😊 Happy",
+      "grateful": "🙏 Grateful",
+      "lost": "😔 Lost"
+    }
   }
 }

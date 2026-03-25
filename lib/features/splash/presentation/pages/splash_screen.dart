@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 6),
     )..repeat();
 
-    logoScale = Tween<double>(begin: 0.8, end: 1.1).animate(
+    logoScale = Tween<double>(begin: 0.9, end: 1.2).animate(
       CurvedAnimation(parent: logoController, curve: Curves.easeInOut),
     );
 
@@ -119,8 +119,8 @@ class _SplashScreenState extends State<SplashScreen>
           ),
           Center(
             child: Container(
-              width: 260,
-              height: 260,
+              width: 400,
+              height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
@@ -145,20 +145,23 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 );
               },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset("assets/images/padre.png", width: 150),
-                  const SizedBox(height: 20),
-                  const Text("Padre",
-                      style: TextStyle(
-                          fontSize: 30,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 10),
-                  const Text("Toujours à votre écoute",
-                      style: TextStyle(color: Colors.white70)),
-                ],
+              child: Center(
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.75,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withOpacity(0.4),
+                        blurRadius: 80,
+                        spreadRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: Image.asset(
+                    "assets/images/logo1_splash.png",
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
             ),
           ),
